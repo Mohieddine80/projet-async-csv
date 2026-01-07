@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+venv/
+.env
+
+# C# / .NET
+bin/
+obj/
+.vs/
+*.user
+
+# Docker / Data
+mongo-data/
+*.csv
+
+# Système
+.DS_Store
+Thumbs.db

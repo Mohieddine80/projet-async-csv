@@ -1,0 +1,73 @@
+services:
+  # 1. Base de données (MongoDB) - IP FIXE : 172.20.0.2
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      mon_reseau:
+        ipv4_address: 172.20.0.2
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  # 2. API C# (Backend BDD) - IP FIXE : 172.20.0.3
+  csharp-api:
+    build: ./csharp-api
+    container_name: csharp-api
+    ports:
+      - "5001:5001"
+    environment:
+      # On pointe sur l'IP de Mongo
+      - ConnectionStrings__MongoDb=mongodb://172.20.0.2:27017
+      - ASPNETCORE_URLS=http://+:5001
+    networks:
+      mon_reseau:
+        ipv4_address: 172.20.0.3
+    depends_on:
+      mongodb:
+        condition: service_healthy
+
+  # 3. Service Flask (Traitement Python) - IP FIXE : 172.20.0.4
+  flask-service:
+    build: ./flask-service
+    container_name: flask-service
+    ports:
+      - "5000:5000"
+    environment:
+      # ON POINTE DIRECTEMENT SUR L'IP DE L'API C# (Plus de DNS !)
+      - CSHARP_API_URL=http://172.20.0.3:5001
+      - PYTHONUNBUFFERED=1
+    networks:
+      mon_reseau:
+        ipv4_address: 172.20.0.4
+    depends_on:
+      - csharp-api
+
+  # 4. Frontend (Interface Web) - IP FIXE : 172.20.0.5
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "3000:80"
+    networks:
+      mon_reseau:
+        ipv4_address: 172.20.0.5
+    depends_on:
+      - flask-service
+
+# DÉFINITION DU RÉSEAU AVEC PLAGE D'IPs FIXES
+networks:
+  mon_reseau:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+volumes:
+  mongo-data:
