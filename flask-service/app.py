@@ -17,7 +17,7 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
-# IP FIXE (Plus de DNS !)
+# IP FIXE 
 CSHARP_API_URL = 'http://172.20.0.3:5001'
 
 processing_status = {
@@ -49,7 +49,7 @@ def process_csv_async(file_path):
         
         if not lines: raise Exception("Fichier vide")
 
-        # --- AUTO-DÉTECTION INTELLIGENTE ---
+        # --- AUTO-DÉTECTION ---
         header_line = lines[0].strip()
         # On regarde qui gagne entre ; et ,
         if header_line.count(';') > header_line.count(','):
@@ -108,7 +108,7 @@ def process_csv_async(file_path):
             try:
                 data = row.to_dict()
                 
-                # ✅ CORRECTION : Créer un ID unique basé sur TOUTES les colonnes
+                # Créer un ID unique basé sur TOUTES les colonnes
                 data['_unique_id'] = create_unique_id(data)
                 
                 # Retry simple

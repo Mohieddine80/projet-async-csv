@@ -54,7 +54,7 @@ services:
     build: ./frontend
     container_name: frontend
     ports:
-      - "3000:80"
+      - "8000:80"
     networks:
       mon_reseau:
         ipv4_address: 172.20.0.5
