@@ -7,7 +7,7 @@ Mohieddine Hamoudi – Dev 1.2
 ## Description du projet
 
 Application web permettant le traitement asynchrone de fichiers CSV volumineux
-(jusqu’à 100 000 lignes et plus), avec :
+, avec :
 
 - Détection automatique des doublons
 - Suivi en temps réel de la progression
