@@ -30,15 +30,8 @@ Application web permettant le traitement asynchrone de fichiers CSV volumineux
 
 ### Schéma d’architecture
 
-
-
-┌─────────────┐      ┌──────────────┐      ┌─────────────┐      ┌──────────┐
-│  Frontend   │─────▶│ Flask Service│─────▶│  API C#     │─────▶│ MongoDB  │
-│  (Nginx)    │      │   (Python)   │      │  (.NET 8)   │      │ (NoSQL)  │
-│  Port 8000  │      │   Port 5000  │      │  Port 5001  │      │Port 27017│
-└─────────────┘      └──────────────┘      └─────────────┘      └──────────┘
-
-
+Frontend (Nginx)          Flask Service (Python)       API C# (.NET 8)           MongoDB (NoSQL)
+    Port 8000        ───────────▶    Port 5000     ───────────▶  Port 5001   ───────────▶  Port 27017
 ---
 
 ## Fonctionnalités principales
