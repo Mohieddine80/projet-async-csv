@@ -10,6 +10,8 @@ import requests
 import os
 import time
 import csv
+import hashlib
+import json
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -26,6 +28,15 @@ processing_status = {
     'skipped_lines': 0,
     'percentage': 0
 }
+
+def create_unique_id(row_dict):
+    """Crée un ID unique basé sur TOUTES les valeurs de la ligne"""
+    # Créer une représentation stable de toutes les données
+    # On enlève les valeurs None et on trie les clés
+    clean_dict = {k: v for k, v in row_dict.items() if v is not None}
+    sorted_data = json.dumps(clean_dict, sort_keys=True, ensure_ascii=False)
+    # Créer un hash MD5
+    return hashlib.md5(sorted_data.encode('utf-8')).hexdigest()
 
 def process_csv_async(file_path):
     """Traite le fichier CSV de manière asynchrone et intelligente"""
@@ -57,14 +68,11 @@ def process_csv_async(file_path):
             if not clean_line: continue
             
             # On tente de lire avec virgule (standard)
-            # Si ça ne marche pas bien (trop peu de colonnes), on tentera autre chose si besoin
             reader = csv.reader([clean_line], delimiter=',') 
             row = next(reader)
             
-            # Si le fichier est hybride (Header ; et Data ,) on gère, sinon on garde la logique standard
-            # Ici on s'assure d'avoir le bon nombre de colonnes
+            # Si le fichier est hybride (Header ; et Data ,) on gère
             if len(row) < len(headers):
-                # Peut-être que les données sont aussi séparées par des ; ?
                 reader_retry = csv.reader([clean_line], delimiter=';')
                 row_retry = next(reader_retry)
                 if len(row_retry) >= len(headers):
@@ -100,11 +108,13 @@ def process_csv_async(file_path):
             try:
                 data = row.to_dict()
                 
+                # ✅ CORRECTION : Créer un ID unique basé sur TOUTES les colonnes
+                data['_unique_id'] = create_unique_id(data)
+                
                 # Retry simple
                 success = False
                 for _ in range(3):
                     try:
-                        # Utilisation de l'IP FIXE définie en haut du fichier
                         response = requests.post(f"{CSHARP_API_URL}/api/data/insert", json=data, timeout=5)
                         if response.status_code == 200:
                             if response.json().get('inserted') is True:

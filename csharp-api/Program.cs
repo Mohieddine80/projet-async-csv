@@ -23,7 +23,7 @@ var mongoClient = new MongoClient(mongoConnectionString);
 var database = mongoClient.GetDatabase("csvdb");
 var collection = database.GetCollection<DataRecord>("records");
 
-// Créer un index unique sur le champ Id pour éviter les doublons
+// Créer un index unique sur le champ RecordId pour éviter les doublons
 var indexKeysDefinition = Builders<DataRecord>.IndexKeys.Ascending(x => x.RecordId);
 var indexOptions = new CreateIndexOptions { Unique = true };
 var indexModel = new CreateIndexModel<DataRecord>(indexKeysDefinition, indexOptions);
@@ -57,17 +57,17 @@ app.MapPost("/api/data/insert", async (JsonElement data, IMongoCollection<DataRe
             return Results.BadRequest(new { error = "Données vides" });
         }
 
-        // Créer un ID unique basé sur les données (ou utiliser un champ spécifique)
-        // Ici on utilise le premier champ comme identifiant unique
-        var firstKey = dataDict.Keys.First();
-        var recordId = dataDict[firstKey].ToString();
+        // ✅ Récupérer l'ID unique envoyé par Flask
+        var recordId = dataDict.ContainsKey("_unique_id") 
+            ? dataDict["_unique_id"].ToString() 
+            : JsonSerializer.Serialize(dataDict); // Fallback : sérialiser toutes les données
 
         var record = new DataRecord
         {
-            RecordId = recordId,
+            RecordId = recordId ?? string.Empty,
             Data = dataDict.ToDictionary(
                 kvp => kvp.Key,
-                kvp => kvp.Value.ToString()
+                kvp => kvp.Value.ToString() ?? string.Empty
             ),
             CreatedAt = DateTime.UtcNow
         };
@@ -129,7 +129,8 @@ app.MapDelete("/api/data/clear", async (IMongoCollection<DataRecord> col) =>
     return Results.Ok(new { message = "Base de données vidée" });
 });
 
-app.Run();
+// ✅ IMPORTANT : Forcer le port 5001
+app.Run("http://0.0.0.0:5001");
 
 // Modèle de données
 public class DataRecord
