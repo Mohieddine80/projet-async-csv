@@ -32,7 +32,7 @@ Application web permettant le traitement asynchrone de fichiers CSV volumineux
 
 Frontend (Nginx)          Flask Service (Python)       API C# (.NET 8)           MongoDB (NoSQL)
 
-    Port 8000        ───▶    Port 5000     ───▶  Port 5001   ───▶  Port 27017
+    Port 8080        ───▶    Port 5000     ───▶  Port 5001   ───▶  Port 27017
 ---
 
 ## Fonctionnalités principales
@@ -90,7 +90,7 @@ Frontend (Nginx)          Flask Service (Python)       API C# (.NET 8)          
 
 - Docker Desktop installé et démarré
 - Minimum 4 Go de RAM disponible
-- Ports libres : 8000, 5000, 5001, 27017
+- Ports libres : 8080, 5000, 5001, 27017
 
 ---
 
@@ -102,7 +102,7 @@ Frontend (Nginx)          Flask Service (Python)       API C# (.NET 8)          
 
 docker-compose up --build
 
-5. Accéder à l'interface : http://localhost:8000
+5. Accéder à l'interface : http://localhost:8080
 6. Sélectionner un fichier CSV : Glisser-déposer ou cliquer pour parcourir
 7. Lancer le traitement : Cliquer sur "Lancer le traitement"
 
